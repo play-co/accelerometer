@@ -1,0 +1,10 @@
+{
+		"copyFiles": 
+		[
+			{
+				"name" : "AccelerometerPlugin.java", 
+				"srcPath" : "./src",
+				"packageName" : "com.tealeaf.plugin.plugins" 
+			}
+		]
+}
