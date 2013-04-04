@@ -58,17 +58,47 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 	// variable used to ignore the first accelerometer reading when computing
 	// the average
 	private boolean firstFilter = true;
-	
+
+	private class DeviceAcceleration {
+		public float x;
+		public float y;
+		public float z;
+		public DeviceAcceleration(float x, float y, float z) {
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		}
+	}
+
+	private class DeviceRotationRate {
+		public float alpha;
+		public float beta;
+		public float gamma;
+		public DeviceRotationRate(float alpha, float beta, float gamma) {
+			this.alpha = alpha;
+			this.beta = beta;
+			this.gamma = gamma;
+		}
+	}
+
+	private class DeviceOrientationEvent extends Event {
+		public float alpha;
+		public float beta;
+		public float gamma;
+		public boolean absolute;
+		public DeviceOrientationEvent(float alpha, float beta, float gamma) {
+			super("deviceorientation");
+			this.alpha = alpha;
+			this.beta = beta;
+			this.gamma = gamma;
+			this.absolute = true;
+		}
+	}
+
 	private class DeviceMotionEvent extends Event {
-		protected float accelerationX;
-		protected float accelerationY; 
-		protected float accelerationZ;
-		protected float accelerationIncludingGravityX;
-		protected float accelerationIncludingGravityY;
-		protected float accelerationIncludingGravityZ; 
-		protected float rotationRateAlpha;
-		protected float rotationRateBeta; 
-		protected float rotationRateGamma;
+		protected DeviceAcceleration acceleration;
+		protected DeviceAcceleration accelerationIncludingGravity;
+		protected DeviceRotationRate rotationRate;
 
 		public DeviceMotionEvent(
 				float accelerationX,
@@ -81,15 +111,18 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 				float rotationRateBeta, 
 				float rotationRateGamma) {
 			super("devicemotion");
-				this.accelerationX = accelerationX;
-				this.accelerationY = accelerationY;
-				this.accelerationZ = accelerationZ;
-				this.accelerationIncludingGravityX = accelerationIncludingGravityX;
-				this.accelerationIncludingGravityY = accelerationIncludingGravityY;
-				this.accelerationIncludingGravityZ = accelerationIncludingGravityZ;
-				this.rotationRateAlpha = rotationRateAlpha;
-				this.rotationRateBeta = rotationRateBeta;
-				this.rotationRateGamma = rotationRateGamma;
+				this.acceleration = new DeviceAcceleration(
+						accelerationX,
+						accelerationY,
+						accelerationZ);
+				this.accelerationIncludingGravity = new DeviceAcceleration(
+						accelerationIncludingGravityX,
+						accelerationIncludingGravityY,
+						accelerationIncludingGravityZ);
+				this.rotationRate = new DeviceRotationRate(
+						rotationRateAlpha,
+						rotationRateBeta,
+						rotationRateGamma);
 		}
 	}
 	
@@ -208,7 +241,7 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 			//to be send to native on the next frame
 			if(gotOrientation && deviceOrientationEventsEnabled) {
 				SensorManager.getOrientation(R, rAngles);
-				//DeviceOrientationEvents.push(rAngles[0], rAngles[1], rAngles[2]);
+				EventQueue.pushEvent(new DeviceOrientationEvent(rAngles[0], rAngles[1], rAngles[2]));
 			}
 			
 			//add a new motion event to the queue so that is can be sent to native on the next frame
