@@ -1,5 +1,6 @@
 package com.tealeaf.plugin.plugins;
 
+import com.tealeaf.TeaLeaf;
 import com.tealeaf.plugin.IPlugin;
 import com.tealeaf.event.Event;
 import com.tealeaf.EventQueue;
@@ -80,20 +81,75 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 			this.gamma = gamma;
 		}
 	}
+	private static final int POW10[] = {1, 10, 100, 1000, 10000, 100000, 1000000};
+
+	 public static void appendDouble(StringBuilder sb, double val, int precision) {
+		 if (val < 0) {
+			 sb.append('-');
+			 val = -val;
+		 }
+		 int exp = POW10[precision];
+		 long lval = (long)(val * exp + 0.5);
+		 sb.append(lval / exp).append('.');
+		 long fval = lval % exp;
+		 for (int p = precision - 1; p > 0 && fval < POW10[p]; p--) {
+			 sb.append('0');
+		 }
+		 sb.append(fval);
+	 }
 
 	private class DeviceOrientationEvent extends Event {
 		public float alpha;
 		public float beta;
 		public float gamma;
 		public boolean absolute;
+		public long lastTime = 0;
+
 		public DeviceOrientationEvent(float alpha, float beta, float gamma) {
 			super("deviceorientation");
+			update(alpha, beta, gamma);
+		}
+
+		public void update(float alpha, float beta, float gamma) {
 			this.alpha = alpha;
 			this.beta = beta;
 			this.gamma = gamma;
 			this.absolute = true;
 		}
+
+		public String pack() {
+		//	return String.format("{\"name\": \"deviceorientation\", \"alpha\":%f,\"beta\":%f,\"gamma\":%f}", alpha, beta, gamma);
+		
+			StringBuilder sb = new StringBuilder(100);
+			sb.append("{\"name\": \"deviceorientation\", \"alpha\":");
+			//sb.append((int)(alpha * 57.2957795131));
+			appendDouble(sb, alpha, 2);
+			sb.append(",\"beta\":");
+			appendDouble(sb, beta, 2);
+			//sb.append((int)(beta * 57.2957795131));
+			sb.append(",\"gamma\":");
+			appendDouble(sb, gamma, 2);
+			//sb.append((int)(gamma * 57.2957795131));
+			sb.append("}");
+			return sb.toString();
+			
+			/*
+			JSONObject obj = new JSONObject();
+			try {
+				obj.put("name", "deviceorientation");
+				obj.put("alpha",(int) alpha);
+				obj.put("beta", (int)beta);
+				obj.put("gamma", (int)gamma);
+			} catch(Exception e) {
+			}
+			long now = System.currentTimeMillis();
+			String s = obj.toString();
+			Log.d("FUCK",Long.toString(System.currentTimeMillis() - now));
+			return obj.toString();
+			*/
+		}
 	}
+	public DeviceOrientationEvent deviceOrientationEvent = new DeviceOrientationEvent(0,0,0);
 
 	private class DeviceMotionEvent extends Event {
 		protected DeviceAcceleration acceleration;
@@ -145,7 +201,7 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 		magneticSensor = sensorManager
 				.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
-		setDeviceMotionEventsEnabled(true);
+		setDeviceOrientationEventsEnabled(true);
 	}
 
 	// Register all needed sensor listeners
@@ -241,7 +297,10 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 			//to be send to native on the next frame
 			if(gotOrientation && deviceOrientationEventsEnabled) {
 				SensorManager.getOrientation(R, rAngles);
-				EventQueue.pushEvent(new DeviceOrientationEvent(rAngles[0], rAngles[1], rAngles[2]));
+				//EventQueue.pushEvent(new DeviceOrientationEvent(rAngles[0], rAngles[1], rAngles[2]));
+				deviceOrientationEvent.update(rAngles[0], rAngles[1], rAngles[2]);
+
+				EventQueue.pushEvent(deviceOrientationEvent);
 			}
 			
 			//add a new motion event to the queue so that is can be sent to native on the next frame
@@ -272,11 +331,10 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 	}
 
 	public void onStart() {
-		unregisterListeners();
 	}
 
 	public void onPause() {
-	
+		unregisterListeners();
 	}
 
 	public void onStop() {
