@@ -1,0 +1,9 @@
+{
+	"copyFiles": [
+		"AccelerometerPlugin.java"
+	],
+	"injectionXML": "manifest.xml",
+	"injectionXSL": "manifest.xsl",
+	"jars": [],
+	"libraries": []
+}
