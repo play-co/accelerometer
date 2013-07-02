@@ -26,6 +26,8 @@ import android.hardware.SensorManager;
 
 public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 
+    private Context context;
+
 	// Sensors and Manager variables
 	private SensorManager sensorManager;
 	private Sensor accelerometerSensor;
@@ -187,7 +189,7 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 	}
 
 	public void onCreateApplication(Context applicationContext) {
-	
+        context = applicationContext;	
 	}
 
 	public void onCreate(Activity activity, Bundle savedInstanceState) {
@@ -296,8 +298,12 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 			//if the orientation was correctly acquired add an event to the orientation queue
 			//to be send to native on the next frame
 			if(gotOrientation && deviceOrientationEventsEnabled) {
-				SensorManager.getOrientation(R, rAngles);
+                float[] R2 = new float[9];
+                sensorManager.remapCoordinateSystem(R, SensorManager.AXIS_X, SensorManager.AXIS_Z, R2);
+				SensorManager.getOrientation(R2, rAngles);
 				//EventQueue.pushEvent(new DeviceOrientationEvent(rAngles[0], rAngles[1], rAngles[2]));
+                //System.out.println("angles: " + rAngles[0] + ", " + rAngles[1] + ", " + rAngles[2]);
+                //System.out.println("Orientation: " + context.getResources().getConfiguration().orientation);
 				deviceOrientationEvent.update(rAngles[0], rAngles[1], rAngles[2]);
 
 				EventQueue.pushEvent(deviceOrientationEvent);
