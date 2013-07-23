@@ -1,0 +1,9 @@
+{
+	"code": [
+		"AccelerometerPlugin.h",
+		"AccelerometerPlugin.mm"
+	],
+	"frameworks": [
+		"CoreMotion"
+	]
+}
