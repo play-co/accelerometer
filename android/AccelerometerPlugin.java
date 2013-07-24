@@ -56,7 +56,7 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 
 	// filtering factor that controls how sensitive to noise the accelerometer
 	// is
-	private final float filteringFactor = 0.1f;
+	private final float filteringFactor = 0.5f;
 
 	// variable used to ignore the first accelerometer reading when computing
 	// the average
@@ -304,6 +304,7 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 				//EventQueue.pushEvent(new DeviceOrientationEvent(rAngles[0], rAngles[1], rAngles[2]));
                 //System.out.println("angles: " + rAngles[0] + ", " + rAngles[1] + ", " + rAngles[2]);
                 //System.out.println("Orientation: " + context.getResources().getConfiguration().orientation);
+				rAngles[2] = (float)-Math.atan2(averageLinearAcceleration[0], averageLinearAcceleration[1]);
 				deviceOrientationEvent.update(rAngles[0], rAngles[1], rAngles[2]);
 
 				EventQueue.pushEvent(deviceOrientationEvent);

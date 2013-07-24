@@ -27,14 +27,6 @@ CMMotionManager* motionManager;
 				  @"beta": @0,
 				  @"gamma": @(angle)
 		  }];
-		/*
-		  char buffer[1024];
-		  snprintf(buffer, 1024, "{\"name\": \"deviceorientation\", \"alpha\": %f, \"beta\": %f, \"gamma\": %f}",
-				   motion.attitude.roll,
-				   motion.attitude.pitch,
-				   angle);
-		  core_dispatch_event(buffer);
-		  */
 	 }];
 	return self;
 }
