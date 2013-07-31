@@ -363,7 +363,7 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 	}
 
 	public boolean consumeOnBackPressed() {
-		return false;
+		return true;
 	}
 
 	public void onBackPressed() {
