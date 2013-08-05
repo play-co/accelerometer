@@ -304,7 +304,24 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 				//EventQueue.pushEvent(new DeviceOrientationEvent(rAngles[0], rAngles[1], rAngles[2]));
                 //System.out.println("angles: " + rAngles[0] + ", " + rAngles[1] + ", " + rAngles[2]);
                 //System.out.println("Orientation: " + context.getResources().getConfiguration().orientation);
-				rAngles[2] = (float)-Math.atan2(averageLinearAcceleration[0], averageLinearAcceleration[1]);
+				float forwardTilt = (float)(Math.atan2(averageLinearAcceleration[2], averageLinearAcceleration[1])); 
+				float tilt = (float)Math.atan2(averageLinearAcceleration[0], averageLinearAcceleration[1]);
+				float twist = (float)Math.atan2(averageLinearAcceleration[0], averageLinearAcceleration[2]);
+				float t = (float)Math.abs(forwardTilt / (Math.PI / 2));
+				if (t > 1) {
+					t = 2 - t;
+				}
+				if (twist > Math.PI / 2) {
+					twist = (float)(Math.PI - twist);
+				}
+				if (twist < -Math.PI / 2) {
+					twist = (float)-(Math.PI + twist);
+				}
+				
+				float interpolatedTilt = tilt * (1-t) + twist *t;
+
+				rAngles[2] = -interpolatedTilt;//(float)-Math.atan2(averageLinearAcceleration[0], averageLinearAcceleration[1]);
+				//System.out.println("1:" + (tilt) + " 2:" + (t) + " 3:" + (twist) + " 4:" + (interpolatedTilt));
 				deviceOrientationEvent.update(rAngles[0], rAngles[1], rAngles[2]);
 
 				EventQueue.pushEvent(deviceOrientationEvent);
