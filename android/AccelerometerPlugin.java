@@ -23,6 +23,8 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.view.WindowManager;
+import android.view.Display;
 
 public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 
@@ -47,6 +49,9 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 	private float rotationRateAlpha = 0;
 	private float rotationRateBeta = 0;
 	private float rotationRateGamma = 0;
+
+	private int[] axisMap = new int[3];
+	private int[] axisSigns = new int[3];
 
 	// store the latest magnetic force reading
 	private float[] magneticForce = new float[3];
@@ -190,10 +195,14 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 
 	public void onCreateApplication(Context applicationContext) {
         context = applicationContext;	
+		initSensors();
 	}
 
 	public void onCreate(Activity activity, Bundle savedInstanceState) {
 		Context context = activity;
+		initSensors();
+	}
+	public void initSensors() {
 		// initialize all sensors and the sensor manager
 		sensorManager = (SensorManager) context
 				.getSystemService(Context.SENSOR_SERVICE);
@@ -204,6 +213,27 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 				.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
 		setDeviceOrientationEventsEnabled(true);
+
+		WindowManager window = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE); 
+		Display display = window.getDefaultDisplay();
+		int rotation = display.getRotation();
+		if (rotation == android.view.Surface.ROTATION_0) {
+			axisMap[0] = 0; axisSigns[0] = 1;
+			axisMap[1] = 1; axisSigns[1] = 1;
+			axisMap[2] = 2; axisSigns[2] = 1;
+		} else if (rotation == android.view.Surface.ROTATION_270) {
+			axisMap[0] = 1; axisSigns[0] = 1;
+			axisMap[1] = 0; axisSigns[1] = -1;
+			axisMap[2] = 2; axisSigns[2] = 1;
+		} else if (rotation == android.view.Surface.ROTATION_90) {
+			axisMap[0] = 1; axisSigns[0] = 1;
+			axisMap[1] = 0; axisSigns[1] = 1;
+			axisMap[2] = 2; axisSigns[2] = 1;
+		} else {
+			axisMap[0] = 0; axisSigns[0] = 1;
+			axisMap[1] = 1; axisSigns[1] = 1;
+			axisMap[2] = 2; axisSigns[2] = 1;
+		}
 	}
 
 	// Register all needed sensor listeners
@@ -277,17 +307,19 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 			//if this is the first reading set the average to the current acceleration
 			if (firstFilter) {
 				for (int i = 0; i < 3; i++) {
-					averageLinearAcceleration[i] = event.values[i];
+					int axis = axisMap[i];
+					averageLinearAcceleration[i] = axisSigns[i] * event.values[axis];
 				}
 				firstFilter = false;
 			} else {
 				//otherwise update the new average acceleration and subtract it out of the
 				//total acceleration to get the user acceleration
 				for (int i = 0; i < 3; i++) {
-					averageLinearAcceleration[i] = event.values[i]
+					int axis = axisMap[i];
+					averageLinearAcceleration[i] = axisSigns[i] * event.values[axis]
 							* filteringFactor + averageLinearAcceleration[i]
 							* (1 - filteringFactor);
-					accel[i] = event.values[i] - averageLinearAcceleration[i];
+					accel[i] = axisSigns[i] * event.values[axis] - averageLinearAcceleration[i];
 				}
 			}
 			//try to get the rotation matrices R and I based on the current average acceleration
@@ -301,6 +333,7 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
                 float[] R2 = new float[9];
                 sensorManager.remapCoordinateSystem(R, SensorManager.AXIS_X, SensorManager.AXIS_Z, R2);
 				SensorManager.getOrientation(R2, rAngles);
+
 				//EventQueue.pushEvent(new DeviceOrientationEvent(rAngles[0], rAngles[1], rAngles[2]));
                 //System.out.println("angles: " + rAngles[0] + ", " + rAngles[1] + ", " + rAngles[2]);
                 //System.out.println("Orientation: " + context.getResources().getConfiguration().orientation);
