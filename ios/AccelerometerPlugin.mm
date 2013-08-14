@@ -27,6 +27,13 @@ CMMotionManager* motionManager;
 				  @"beta": @0,
 				  @"gamma": @(angle)
 		  }];
+		  [[PluginManager get] dispatchJSEvent:@{
+			  @"name": @"deviceGravity",
+				  @"x": @(motion.gravity.x),
+				  @"y": @(motion.gravity.y),
+				  @"z": @(motion.gravity.z)
+		  }];
+
 	 }];
 	return self;
 }

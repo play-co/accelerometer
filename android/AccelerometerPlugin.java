@@ -189,6 +189,30 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 		}
 	}
 	
+	private GravityEvent gravityEvent = new GravityEvent(0,0,0);
+	private class GravityEvent extends Event {
+		public float x, y, z;
+		public GravityEvent(float x, float y, float z) {
+			super("deviceGravity");
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		}
+		public String pack() {
+		
+			StringBuilder sb = new StringBuilder(100);
+			sb.append("{\"name\": \"deviceGravity\", \"x\":");
+			appendDouble(sb, x, 2);
+			sb.append(",\"y\":");
+			appendDouble(sb, y, 2);
+			sb.append(",\"z\":");
+			appendDouble(sb, z, 2);
+			sb.append("}");
+			return sb.toString();
+		}
+
+	}
+
 	public AccelerometerPlugin() {
 
 	}
@@ -322,17 +346,22 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 					accel[i] = axisSigns[i] * event.values[axis] - averageLinearAcceleration[i];
 				}
 			}
+			gravityEvent.x = -averageLinearAcceleration[0]; 
+			gravityEvent.y = -averageLinearAcceleration[1]; 
+			gravityEvent.z = -averageLinearAcceleration[2]; 
+			EventQueue.pushEvent(gravityEvent);
+/*
 			//try to get the rotation matrices R and I based on the current average acceleration
 			//and the magnetic force
-			boolean gotOrientation = SensorManager.getRotationMatrix(R, I,
-					averageLinearAcceleration, magneticForce);
+			//boolean gotOrientation = SensorManager.getRotationMatrix(R, I,
+			//		averageLinearAcceleration, magneticForce);
 			
 			//if the orientation was correctly acquired add an event to the orientation queue
 			//to be send to native on the next frame
-			if(gotOrientation && deviceOrientationEventsEnabled) {
-                float[] R2 = new float[9];
-                sensorManager.remapCoordinateSystem(R, SensorManager.AXIS_X, SensorManager.AXIS_Z, R2);
-				SensorManager.getOrientation(R2, rAngles);
+			//if(gotOrientation && deviceOrientationEventsEnabled) {
+            //    float[] R2 = new float[9];
+            //    sensorManager.remapCoordinateSystem(R, SensorManager.AXIS_X, SensorManager.AXIS_Z, R2);
+			//	SensorManager.getOrientation(R2, rAngles);
 
 				//EventQueue.pushEvent(new DeviceOrientationEvent(rAngles[0], rAngles[1], rAngles[2]));
                 //System.out.println("angles: " + rAngles[0] + ", " + rAngles[1] + ", " + rAngles[2]);
@@ -357,9 +386,9 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 				//System.out.println("1:" + (tilt) + " 2:" + (t) + " 3:" + (twist) + " 4:" + (interpolatedTilt));
 				deviceOrientationEvent.update(rAngles[0], rAngles[1], rAngles[2]);
 
-				EventQueue.pushEvent(deviceOrientationEvent);
-			}
-			
+				//EventQueue.pushEvent(deviceOrientationEvent);
+			//}
+	*/		
 			//add a new motion event to the queue so that is can be sent to native on the next frame
 			if(deviceMotionEventsEnabled) {
 				//lets send a motion event to javascript
