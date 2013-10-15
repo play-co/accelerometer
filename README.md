@@ -13,6 +13,7 @@ basil install accelerometer
 ~~~
 
 Example usage from inside a JS game:
+
 ~~~
 			NATIVE.events.registerHandler('deviceGravity', bind(this, function(evt) {
 				var x = -evt.x;
