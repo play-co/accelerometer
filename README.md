@@ -4,8 +4,15 @@ This module provides preliminary support for the built-in accelerometer on iOS a
 
 This is a pre-release module because we have not had the time to go back and wrap the NATIVE functions in JS objects.
 
-Example usage:
+Installation instructions:
 
+Run this command:
+
+~~~
+basil install accelerometer
+~~~
+
+Example usage from inside a JS game:
 ~~~
 			NATIVE.events.registerHandler('deviceGravity', bind(this, function(evt) {
 				var x = -evt.x;
