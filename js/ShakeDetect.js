@@ -26,78 +26,69 @@ var accelerometerHandler = function(evt) {
 	y = y / samp;
 	z = z / samp;
 
-	// This is not tied to any particular time interval so may
-	// behave differently on different devices
-	var dx = x - lastX;
-	var dy = y - lastY;
-	var dz = z - lastZ;
-	lastX = x;
-	lastY = y;
-	lastZ = z;
-
 	var sampleIndex = sampleCount++;
 	var sample = samples[sampleIndex];
 	if (!sample) {
 		samples[sampleIndex] = {
-			'x': dx,
-			'y': dy,
-			'z': dz,
+			'x': x,
+			'y': y,
+			'z': z,
 			'amp': amp
 		};
 	} else {
-		sample.x = dx;
-		sample.y = dy;
-		sample.z = dz;
+		sample.x = x;
+		sample.y = y;
+		sample.z = z;
 		sample.amp = amp;
 	}
 
 	// Every second,
 	var now = +new Date();
-	if (now - lastCheck < 1000) {
+	if (now - lastCheck < 500) {
 		return;
 	}
 
-	// Find the most intense acceleration in the set
-	var best = samples[0];
-	var bestAmp = best && best.amp;
-	for (var i = 1; i < sampleCount; i++) {
-		var sample = samples[i];
-		var amp = sample.amp;
+	var zeroCrossingsX = 0, zeroCrossingsY = 0, zeroCrossingsZ = 0;
 
-		if (amp > bestAmp) {
-			bestAmp = amp;
-			best = sample;
+	// For each sample,
+	var lsx = 0, lsy = 0, lsz = 0;
+	for (var j = 0; j < sampleCount; j++) {
+		var sample = samples[j];
+
+		var sx = sample.x;
+		var sy = sample.y;
+		var sz = sample.z;
+
+		logger.log(sx, sy, sz);
+
+		// If there is some motion,
+		if (Math.abs(sx) > 0.15) {
+			if ((sx < 0 && lsx > 0) || (sx > 0 && lsx < 0)) {
+				++zeroCrossingsX;
+			}
+			lsx = sx;
+		}
+		if (Math.abs(sy) > 0.15) {
+			if ((sy < 0 && lsy > 0) || (sy > 0 && lsy < 0)) {
+				++zeroCrossingsY;
+			}
+			lsy = sy;
+		}
+		if (Math.abs(sz) > 0.15) {
+			if ((sz < 0 && lsz > 0) || (sz > 0 && lsz < 0)) {
+				++zeroCrossingsZ;
+			}
+			lsz = sz;
 		}
 	}
 
-	// If useful data,
-	if (best) {
-		var last = 0;
-		var zeroCrossings = 0;
-
-		// For each sample,
-		for (var j = 0; j < sampleCount; j++) {
-			var sample = samples[j];
-			var dot = sample.x * best.x + sample.y * best.y + sample.z * best.z;
-
-			// If there is some motion,
-			if (Math.abs(dot) > 0.0015) {
-				if ((dot < 0 && last > 0) || (dot > 0 && last < 0)) {
-					++zeroCrossings;
-				}
-
-				last = dot;
-			}
-		}
-
-		// If 4 shakes in ~2 seconds,
-		if (zeroCrossings >= 4) {
-			if (shakeHandler) {
-				// If not shaken recently,
-				if (now - lastShake > 1000) {
-					shakeHandler();
-					lastShake = now;
-				}
+	// If 4 shakes in ~2 seconds,
+	if (zeroCrossingsX >= 4 || zeroCrossingsY >= 4 || zeroCrossingsZ >= 4) {
+		if (shakeHandler) {
+			// If not shaken recently,
+			if (now - lastShake > 2000) {
+				shakeHandler();
+				lastShake = now;
 			}
 		}
 	}
