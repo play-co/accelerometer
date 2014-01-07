@@ -62,8 +62,6 @@ var accelerometerHandler = function(evt) {
 		var sy = sample.y;
 		var sz = sample.z;
 
-		logger.log(sx, sy, sz);
-
 		// If there is some motion,
 		if (Math.abs(sx) > THRESH) {
 			if ((sx < 0 && lsx > 0) || (sx > 0 && lsx < 0)) {
