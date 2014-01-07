@@ -9,6 +9,8 @@ var lastCheck = 0, lastShake = 0;
 var lastX = 0, lastY = 0, lastZ = 0;
 var shakeHandler = null;
 
+var THRESH = device.isIOS ? 0.015 : 0.15;
+
 var accelerometerHandler = function(evt) {
 	var x = evt.x, y = evt.y, z = evt.z;
 	var amp = Math.sqrt(x*x + y*y + z*z);
@@ -61,8 +63,6 @@ var accelerometerHandler = function(evt) {
 		var sz = sample.z;
 
 		logger.log(sx, sy, sz);
-
-		var thresh = device.isIOS ? 0.015 : 0.15;
 
 		// If there is some motion,
 		if (Math.abs(sx) > THRESH) {
