@@ -193,7 +193,7 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 	private class GravityEvent extends Event {
 		public float x, y, z;
 		public GravityEvent(float x, float y, float z) {
-			super("deviceGravity");
+			super("accelerometerEvent");
 			this.x = x;
 			this.y = y;
 			this.z = z;
@@ -201,7 +201,7 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 		public String pack() {
 		
 			StringBuilder sb = new StringBuilder(100);
-			sb.append("{\"name\": \"deviceGravity\", \"x\":");
+			sb.append("{\"name\": \"accelerometerEvent\", \"x\":");
 			appendDouble(sb, x, 2);
 			sb.append(",\"y\":");
 			appendDouble(sb, y, 2);

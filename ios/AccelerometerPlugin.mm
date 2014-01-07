@@ -6,7 +6,6 @@ CMMotionManager* motionManager;
 @implementation AccelerometerPlugin
 
 - (void) dealloc {
-
 	[super dealloc];
 }
 
@@ -15,27 +14,44 @@ CMMotionManager* motionManager;
 	if (!self) {
 		return nil;
 	}
+
+	NSLog(@"{accelerometer} Initializing");
+
 	motionManager = [[CMMotionManager alloc] init];
 	[motionManager stopDeviceMotionUpdates];
-	[motionManager setDeviceMotionUpdateInterval: 1/60.0];
-	[motionManager startDeviceMotionUpdatesToQueue:[[NSOperationQueue alloc] init]
-	  withHandler: ^(CMDeviceMotion *motion, NSError *error) {
-		  CGFloat angle =  -atan2( -motion.gravity.x, -motion.gravity.y );
-		  [[PluginManager get] dispatchJSEvent:@{
-			  @"name": @"deviceorientation",
-				  @"alpha": @0,
-				  @"beta": @0,
-				  @"gamma": @(angle)
-		  }];
-		  [[PluginManager get] dispatchJSEvent:@{
-			  @"name": @"deviceGravity",
-				  @"x": @(motion.gravity.x),
-				  @"y": @(motion.gravity.y),
-				  @"z": @(motion.gravity.z)
-		  }];
 
-	 }];
 	return self;
 }
 
+- (void) startEvents:(NSDictionary *)jsonObject {
+	@try {
+		NSLog(@"{accelerometer} Starting");
+		[motionManager stopDeviceMotionUpdates];
+		[motionManager setDeviceMotionUpdateInterval: 1/40.0];
+		[motionManager startDeviceMotionUpdatesToQueue:[[NSOperationQueue alloc] init]
+			withHandler: ^(CMDeviceMotion *motion, NSError *error) {
+				[[PluginManager get] dispatchJSEvent:@{
+					@"name": @"accelerometerEvent",
+						@"x": @(motion.gravity.x),
+						@"y": @(motion.gravity.y),
+						@"z": @(motion.gravity.z)
+				}];
+			}];
+	}
+	@catch (NSException *exception) {
+		NSLog(@"{accelerometer} WARNING: Unable to start events: %@", exception);
+	}
+}
+
+- (void) stopEvents:(NSDictionary *)jsonObject {
+	@try {
+		[motionManager stopDeviceMotionUpdates];
+		NSLog(@"{accelerometer} Stopped");
+	}
+	@catch (NSException *exception) {
+		NSLog(@"{accelerometer} WARNING: Unable to stop events: %@", exception);
+	}
+}
+
 @end
+
