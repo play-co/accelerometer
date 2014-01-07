@@ -1,4 +1,5 @@
 import .accelerometer;
+import device;
 
 var samples = [];
 var sampleCount = 0;
@@ -61,20 +62,22 @@ var accelerometerHandler = function(evt) {
 
 		logger.log(sx, sy, sz);
 
+		var thresh = device.isIOS ? 0.015 : 0.15;
+
 		// If there is some motion,
-		if (Math.abs(sx) > 0.15) {
+		if (Math.abs(sx) > THRESH) {
 			if ((sx < 0 && lsx > 0) || (sx > 0 && lsx < 0)) {
 				++zeroCrossingsX;
 			}
 			lsx = sx;
 		}
-		if (Math.abs(sy) > 0.15) {
+		if (Math.abs(sy) > THRESH) {
 			if ((sy < 0 && lsy > 0) || (sy > 0 && lsy < 0)) {
 				++zeroCrossingsY;
 			}
 			lsy = sy;
 		}
-		if (Math.abs(sz) > 0.15) {
+		if (Math.abs(sz) > THRESH) {
 			if ((sz < 0 && lsz > 0) || (sz > 0 && lsz < 0)) {
 				++zeroCrossingsZ;
 			}
