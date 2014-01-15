@@ -9,7 +9,7 @@ var lastCheck = 0, lastShake = 0;
 var lastX = 0, lastY = 0, lastZ = 0;
 var shakeHandler = null;
 
-var THRESH = device.isIOS ? 0.015 : 0.15;
+var THRESH = device.isIOS ? 0.012 : 0.15;
 
 var accelerometerHandler = function(evt) {
 	var x = evt.x, y = evt.y, z = evt.z;
