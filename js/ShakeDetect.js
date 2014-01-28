@@ -51,45 +51,73 @@ var accelerometerHandler = function(evt) {
 		return;
 	}
 
-	var zeroCrossingsX = 0, zeroCrossingsY = 0, zeroCrossingsZ = 0;
+	// If too few samples to do zero crossing detection,
+	if (sampleCount < 8) {
+		var intenseCount = 0;
 
-	// For each sample,
-	var lsx = 0, lsy = 0, lsz = 0;
-	for (var j = 0; j < sampleCount; j++) {
-		var sample = samples[j];
+		for (var j = 0; j < sampleCount; ++j) {
+			var sample = samples[j];
+			var sx = sample.x;
+			var sy = sample.y;
+			var sz = sample.z;
+			var mag = Math.sqrt(sx*sx + sy*sy + sz*sz);
 
-		var sx = sample.x;
-		var sy = sample.y;
-		var sz = sample.z;
-
-		// If there is some motion,
-		if (Math.abs(sx) > THRESH) {
-			if ((sx < 0 && lsx > 0) || (sx > 0 && lsx < 0)) {
-				++zeroCrossingsX;
+			// If accelerometer detects motion above threshold for several samples,
+			if (mag > 1 + THRESH) {
+				++intenseCount;
 			}
-			lsx = sx;
 		}
-		if (Math.abs(sy) > THRESH) {
-			if ((sy < 0 && lsy > 0) || (sy > 0 && lsy < 0)) {
-				++zeroCrossingsY;
-			}
-			lsy = sy;
-		}
-		if (Math.abs(sz) > THRESH) {
-			if ((sz < 0 && lsz > 0) || (sz > 0 && lsz < 0)) {
-				++zeroCrossingsZ;
-			}
-			lsz = sz;
-		}
-	}
 
-	// If 4 shakes in ~2 seconds,
-	if (zeroCrossingsX >= 4 || zeroCrossingsY >= 4 || zeroCrossingsZ >= 4) {
-		if (shakeHandler) {
-			// If not shaken recently,
-			if (now - lastShake > 2000) {
-				shakeHandler();
-				lastShake = now;
+		// If at least 3 intense readings,
+		if (intenseCount >= 3) {
+			if (shakeHandler) {
+				// If not shaken recently,
+				if (now - lastShake > 2000) {
+					shakeHandler();
+					lastShake = now;
+				}
+			}
+		}
+	} else {
+		var zeroCrossingsX = 0, zeroCrossingsY = 0, zeroCrossingsZ = 0;
+
+		// For each sample,
+		var lsx = 0, lsy = 0, lsz = 0;
+		for (var j = 0; j < sampleCount; j++) {
+			var sample = samples[j];
+			var sx = sample.x;
+			var sy = sample.y;
+			var sz = sample.z;
+
+			// If there is some motion,
+			if (Math.abs(sx) > THRESH) {
+				if ((sx < 0 && lsx > 0) || (sx > 0 && lsx < 0)) {
+					++zeroCrossingsX;
+				}
+				lsx = sx;
+			}
+			if (Math.abs(sy) > THRESH) {
+				if ((sy < 0 && lsy > 0) || (sy > 0 && lsy < 0)) {
+					++zeroCrossingsY;
+				}
+				lsy = sy;
+			}
+			if (Math.abs(sz) > THRESH) {
+				if ((sz < 0 && lsz > 0) || (sz > 0 && lsz < 0)) {
+					++zeroCrossingsZ;
+				}
+				lsz = sz;
+			}
+		}
+
+		// If 4 shakes in ~2 seconds,
+		if (zeroCrossingsX >= 4 || zeroCrossingsY >= 4 || zeroCrossingsZ >= 4) {
+			if (shakeHandler) {
+				// If not shaken recently,
+				if (now - lastShake > 2000) {
+					shakeHandler();
+					lastShake = now;
+				}
 			}
 		}
 	}
