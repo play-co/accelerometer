@@ -1,4 +1,4 @@
-import .accelerometer;
+import accelerometer;
 import device;
 
 var samples = [];
