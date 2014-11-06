@@ -7,64 +7,100 @@ Installation instructions:
 Run this command:
 
 ~~~
-basil install accelerometer
+devkit install https://github.com/gameclosure/accelerometer#devkit2
 ~~~
 
 Example usage from inside a JS game:
 
 ~~~
-import plugins.accelerometer.accelerometer as accelerometer;
+import accelerometer;
 ~~~
 
 ~~~
-	var pi = Math.PI;
-	var abs = Math.abs;
-	var atan2 = Math.atan2;
+var pi = Math.PI;
+var abs = Math.abs;
+var atan2 = Math.atan2;
 
-	accelerometer.start(bind(this, function(evt) {
-			var x = -evt.x;
-			var y = -evt.y;
-			var z = -evt.z;
-			var forwardTilt = atan2(z, y);
-			var tilt = atan2(x, y);
-			var twist = atan2(x, z);
-			var t = abs(forwardTilt / (pi / 2));
-			if (t > 1) {
-			t = 2 - t;
-			}
-			if (twist > pi / 2) {
-			twist = (pi - twist);
-			}
-			if (twist < -pi / 2) {
-			twist = -(pi + twist);
-			}
+accelerometer.start(bind(this, function(evt) {
+    var x = -evt.x;
+    var y = -evt.y;
+    var z = -evt.z;
+    var forwardTilt = atan2(z, y);
+    var tilt = atan2(x, y);
+    var twist = atan2(x, z);
+    var t = abs(forwardTilt / (pi / 2));
+    if (t > 1) {
+        t = 2 - t;
+    }
+    if (twist > pi / 2) {
+        twist = (pi - twist);
+    }
+    if (twist < -pi / 2) {
+        twist = -(pi + twist);
+    }
 
-			var interpolatedTilt = tilt * (1-t) + twist * t;
+    var interpolatedTilt = tilt * (1-t) + twist * t;
 
-			this.controller.tilt = -interpolatedTilt;
-	}));
+    this.controller.tilt = -interpolatedTilt;
+}));
 
 ...
 
-	accelerometer.stop();
+accelerometer.stop();
 ~~~
 
-The Accelerometer plugin also includes a ShakeDetect JS module.
+The Accelerometer plugin also includes a ShakeDetect JS module inside the util
+folder.
 
 Example usage:
 
 ~~~
-import plugins.accelerometer.ShakeDetect as ShakeDetect;
-~~~
+import ui.TextView as TextView;
+import accelerometer.util.shakedetect as shakedetect;
 
-~~~
-ShakeDetect.start(function() {
-		logger.log("User shook the phone").
+
+SHAKE_COOLDOWN = 2000;
+
+exports = Class(GC.Application, function () {
+
+  this.initUI = function () {
+    this.shakeText = new TextView({
+      superview: this.view,
+      text: "...",
+      color: "white",
+      x: 0,
+      y: 150,
+      width: this.view.style.width,
+      height: 100
+    });
+
+    // turn off shakedetect on hide, on on show
+    GC.on('hide', function () { shakedetect.stop(); });
+    GC.on('show', bind(this, function () { this.startshakedetect(); }));
+
+    // start listening for shakes
+    this.shakeCooldown = 0;
+    this.startshakedetect();
+  };
+
+  this.startshakedetect = function () {
+    shakedetect.start(bind(this, function() {
+      logger.log("User shook the phone!");
+      this.shakeText.setText("Don't shake me bro!");
+      this.shakeCooldown = SHAKE_COOLDOWN;
+    }));
+  };
+
+  this.tick = function (dt) {
+    if (this.shakeCooldown > 0) {
+      this.shakeCooldown -= dt;
+
+      if (this.shakeCooldown <= 0) {
+        this.shakeText.setText('...');
+      }
+    }
+  };
 });
-
-...
-
-ShakeDetect.stop();
 ~~~
 
 Be sure to call .stop() when done handling events.  Also, only one event handler
