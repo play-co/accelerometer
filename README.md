@@ -1,15 +1,24 @@
 # Game Closure Devkit Plugin : Accelerometer
 
-This module provides preliminary support for the built-in accelerometer on iOS and Android devices.
+This module provides preliminary support for the built-in accelerometer on iOS
+and Android devices, including a helper library for simply detecting if the user
+is shaking the device.
 
-Installation instructions:
 
-Run this command:
+## Demo
+Check out [the demo
+application](https://github.com/gameclosure/demoAccelerometer)
+
+
+## Installation
+Install the module using using the standard devkit install process:
 
 ~~~
-devkit install https://github.com/gameclosure/accelerometer#devkit2
+devkit install https://github.com/gameclosure/accelerometer#v2.0.0
 ~~~
 
+
+## Usage
 Example usage from inside a JS game:
 
 ~~~
