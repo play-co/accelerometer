@@ -45,7 +45,21 @@ if (hasNativeEvents && !device.isSimulator) {
     };
 
     fixedEvent.__proto__ = evt;
+    module.exports.emit('devicemotion', fixedEvent);
+  });
+} else if (device.isMobileBrowser && device.isAndroid) {
+  // android chrome returns radians, not degrees
+  var RAD_TO_DEGREES = 180 / Math.PI;
+  window.addEventListener('devicemotion', function (evt) {
+    var fixedEvent = {
+      rotationRate: {
+        alpha: evt.rotationRate.gamma * RAD_TO_DEGREES,
+        beta: evt.rotationRate.alpha * RAD_TO_DEGREES,
+        gamma: evt.rotationRate.beta * RAD_TO_DEGREES
+      }
+    };
 
+    fixedEvent.__proto__ = evt;
     module.exports.emit('devicemotion', fixedEvent);
   });
 } else {
