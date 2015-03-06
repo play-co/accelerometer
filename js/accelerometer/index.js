@@ -14,11 +14,14 @@ if (hasNativeEvents && !device.isSimulator) {
     nativeWindow.emit('devicemotion', evt);
   });
 
-  nativeWindow.on('newListener', function (type, cb) {
+  var startEvents = function (type, cb) {
     if (type == 'devicemotion') {
       NATIVE.plugins.sendEvent("AccelerometerPlugin", "startEvents", "{}");
     }
-  });
+  };
+
+  nativeWindow.on('newListener', startEvents);
+  module.exports.on('newListener', startEvents);
 } else if (device.isMobileBrowser && device.isIOS) {
   // mobile safari returns inverted coordinates
   window.addEventListener('devicemotion', function (evt) {
@@ -33,6 +36,11 @@ if (hasNativeEvents && !device.isSimulator) {
         x: -evt.accelerationIncludingGravity.x,
         y: -evt.accelerationIncludingGravity.y,
         z: -evt.accelerationIncludingGravity.z
+      },
+      rotationRate: {
+        alpha: evt.rotationRate.gamma,
+        beta: evt.rotationRate.alpha,
+        gamma: evt.rotationRate.beta
       }
     };
 

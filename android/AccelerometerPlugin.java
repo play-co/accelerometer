@@ -51,6 +51,8 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
     // store the latest magnetic force reading
     private float[] magneticForce = new float[3];
 
+    private static final float RAD_TO_DEGREES = (float) (180.0f / Math.PI);
+
     private class DeviceAcceleration {
         public float x;
         public float y;
@@ -105,7 +107,6 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
     }
 
     public AccelerometerPlugin() {
-        Log.d("accel", "ACCELEROMETER PLUGIN READY");
     }
 
     public void onCreateApplication(Context applicationContext) {
@@ -151,13 +152,11 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
     }
 
     public void startEvents(String jsonData) {
-        Log.d("accel", "ACCELEROMETER STARTING");
         sensorsEnabled = true;
         registerListeners();
     }
 
     public void stopEvents(String jsonData) {
-        Log.d("accel", "ACCELEROMETER STOPPING");
         sensorsEnabled = false;
         unregisterListeners();
     }
@@ -179,8 +178,6 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
             gravity[1] = alpha * gravity[1] + (1 - alpha) * event.values[1];
             gravity[2] = alpha * gravity[2] + (1 - alpha) * event.values[2];
 
-            Log.d("accel", "g: " + gravity[0] + " " + gravity[1] + " " + gravity[2]);
-
             EventQueue.pushEvent(new DeviceMotionEvent(
                     // acceleration
                     event.values[0] - gravity[0],
@@ -195,10 +192,11 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 
             break;
         case Sensor.TYPE_GYROSCOPE:
-            // store the latest gyroscope readings
-            rotationRateAlpha = event.values[0];
-            rotationRateBeta = event.values[1];
-            rotationRateGamma = event.values[2];
+            // store the latest gyroscope readings, convert to degrees per
+            // second (from radians per second)
+            rotationRateAlpha = event.values[0] * RAD_TO_DEGREES;
+            rotationRateBeta = event.values[1] * RAD_TO_DEGREES;
+            rotationRateGamma = event.values[2] * RAD_TO_DEGREES;
             break;
         case Sensor.TYPE_MAGNETIC_FIELD:
             // store the current magnetic field vector
