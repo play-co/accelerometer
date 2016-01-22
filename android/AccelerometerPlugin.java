@@ -1,6 +1,5 @@
 package com.tealeaf.plugin.plugins;
 
-import com.tealeaf.TeaLeaf;
 import com.tealeaf.plugin.IPlugin;
 import com.tealeaf.event.Event;
 import com.tealeaf.EventQueue;
