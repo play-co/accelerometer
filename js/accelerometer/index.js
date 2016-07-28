@@ -62,6 +62,9 @@ if (hasNativeEvents && !device.isSimulator) {
     fixedEvent.__proto__ = evt;
     module.exports.emit('devicemotion', fixedEvent);
   });
+  window.addEventListener('deviceorientation', function (evt) {
+    module.exports.emit('deviceorientation', evt);
+  });
 } else {
   window.addEventListener('devicemotion', function (evt) {
     // desktop browsers sometimes send null events
